@@ -243,8 +243,9 @@
       if (!r.ok) return r;
       this.setToken(r.token);
       this.currentUser = r.username;
-      // 加载用户数据
+      // 加载用户数据，失败时用空数据兜底
       await this.load();
+      if (!this.data) this.initUserData();
       return { ok: true };
     },
 
@@ -697,6 +698,7 @@
 
     // ---------- 首页 ----------
     home() {
+      try {
       const tp = Store.todayProgress();
       const reviewQueue = Store.getReviewQueue();
       const learned = Store.learnedCount();
@@ -757,6 +759,10 @@
       document.querySelectorAll('.action-card').forEach(c => {
         c.addEventListener('click', () => { location.hash = '#/' + c.dataset.goto; });
       });
+      } catch(e) {
+        console.error('home render error:', e);
+        view.innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:50vh;gap:12px;color:var(--text-lighter)"><p>数据加载异常</p><button class="btn btn-primary" onclick="location.reload()">重新加载</button></div>';
+      }
     },
 
     // ---------- 学习 ----------
@@ -1454,6 +1460,10 @@
       Views.auth();
       window.scrollTo(0, 0);
       return;
+    }
+    // 登录后确保 data 存在（防止 load 失败导致 home 崩溃）
+    if (Store.currentUser && !Store.data) {
+      Store.initUserData();
     }
     document.querySelectorAll('.nav-menu a').forEach(a => {
       a.classList.toggle('active', a.dataset.route === hash);
