@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>管理后台 · 打字记单词</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --primary: #4f46e5; --primary-light: #eef2ff;
+    --bg: #f8fafc; --card: #fff;
+    --text: #1e293b; --text-light: #64748b; --text-lighter: #94a3b8;
+    --border: #e2e8f0; --green: #22c55e; --red: #ef4444; --orange: #f59e0b;
+  }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); }
+  .login-wrap { max-width: 380px; margin: 80px auto; background: var(--card); border-radius: 16px; padding: 40px 32px; box-shadow: 0 4px 20px rgba(0,0,0,.08); }
+  .login-wrap h1 { font-size: 22px; text-align: center; margin-bottom: 8px; }
+  .login-wrap p { text-align: center; color: var(--text-light); font-size: 14px; margin-bottom: 28px; }
+  .field { margin-bottom: 16px; }
+  .field label { display: block; font-size: 13px; color: var(--text-light); margin-bottom: 6px; }
+  .field input { width: 100%; padding: 12px 14px; border: 2px solid var(--border); border-radius: 8px; font-size: 15px; }
+  .field input:focus { outline: none; border-color: var(--primary); }
+  .btn { display: block; width: 100%; padding: 12px; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; background: var(--primary); color: #fff; }
+  .btn:hover { opacity: .9; }
+  .btn-outline { background: transparent; border: 2px solid var(--border); color: var(--text-light); }
+  .err { color: var(--red); font-size: 14px; text-align: center; min-height: 20px; margin-top: 12px; }
+
+  .admin-header { background: var(--card); border-bottom: 1px solid var(--border); padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; }
+  .admin-header h1 { font-size: 18px; }
+  .admin-header .right { display: flex; gap: 12px; align-items: center; }
+  .stat-chip { background: var(--primary-light); color: var(--primary); padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; }
+
+  .container { max-width: 1100px; margin: 24px auto; padding: 0 24px; }
+  .card { background: var(--card); border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,.06); overflow: hidden; margin-bottom: 24px; }
+  table { width: 100%; border-collapse: collapse; }
+  th { background: var(--bg); text-align: left; padding: 12px 16px; font-size: 13px; color: var(--text-light); font-weight: 600; white-space: nowrap; }
+  td { padding: 12px 16px; border-top: 1px solid var(--border); font-size: 14px; }
+  tr:hover { background: var(--bg); cursor: pointer; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+  .badge-green { background: #dcfce7; color: #166534; }
+  .badge-orange { background: #fef3c7; color: #92400e; }
+  .badge-red { background: #fee2e2; color: #991b1b; }
+  .badge-gray { background: #f1f5f9; color: #64748b; }
+
+  .back-link { color: var(--primary); cursor: pointer; font-size: 14px; display: inline-flex; align-items: center; gap: 4px; }
+  .detail-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px; }
+
+  .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 24px; }
+  .stat-box { background: var(--card); border-radius: 10px; padding: 16px 20px; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+  .stat-box .label { font-size: 12px; color: var(--text-lighter); margin-bottom: 4px; }
+  .stat-box .num { font-size: 24px; font-weight: 700; }
+
+  .calendar-wrap { background: var(--card); border-radius: 12px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,.06); margin-bottom: 24px; }
+  .calendar-wrap h3 { font-size: 15px; margin-bottom: 12px; }
+  .calendar-legend { display: flex; gap: 8px; align-items: center; font-size: 12px; color: var(--text-light); margin-bottom: 12px; }
+  .cal-cell { display: inline-block; width: 14px; height: 14px; border-radius: 3px; margin-right: 3px; }
+  .cal-0 { background: #ebedf0; }
+  .cal-1 { background: #c6e48b; }
+  .cal-2 { background: #7bc96f; }
+  .cal-3 { background: #239a3b; }
+  .cal-4 { background: #196127; }
+  .calendar-grid { display: flex; gap: 4px; flex-wrap: wrap; }
+  .cal-day { width: 14px; height: 14px; border-radius: 3px; background: #ebedf0; }
+  .cal-day.has-1 { background: #c6e48b; }
+  .cal-day.has-2 { background: #7bc96f; }
+  .cal-day.has-3 { background: #239a3b; }
+  .cal-day.has-4 { background: #196127; }
+  .cal-day.today { outline: 2px solid var(--primary); }
+
+  .word-list { max-height: 400px; overflow-y: auto; }
+  .word-list table { font-size: 13px; }
+  .word-list th { position: sticky; top: 0; z-index: 1; }
+
+  @media (max-width: 640px) {
+    .container { padding: 0 12px; }
+    th, td { padding: 8px 10px; font-size: 13px; }
+    .hide-mobile { display: none; }
+    .login-wrap { margin: 40px 16px; padding: 28px 20px; }
+  }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+const API = '';
+let adminToken = localStorage.getItem('admin_token') || '';
+let currentUserDetail = null;
+
+async function api(path, method='GET', body=null) {
+  const opts = { method, headers: {} };
+  if (adminToken) opts.headers['Authorization'] = 'Bearer ' + adminToken;
+  if (body) { opts.headers['Content-Type'] = 'application/json'; opts.body = JSON.stringify(body); }
+  const res = await fetch(API + path, opts);
+  return res.json();
+}
+
+function render() {
+  const app = document.getElementById('app');
+  if (!adminToken) { renderLogin(app); return; }
+  if (currentUserDetail) { renderUserDetail(app); return; }
+  renderUserList(app);
+}
+
+function renderLogin(app) {
+  app.innerHTML = `
+    <div class="login-wrap">
+      <h1>管理后台</h1>
+      <p>打字记单词 · 管理员登录</p>
+      <div class="field"><label>管理员账号</label><input id="adminUser" value="admin" autocomplete="off"></div>
+      <div class="field"><label>密码</label><input id="adminPass" type="password" placeholder="请输入密码"></div>
+      <button class="btn" id="loginBtn">登录</button>
+      <div class="err" id="err"></div>
+    </div>`;
+  document.getElementById('loginBtn').onclick = async () => {
+    const u = document.getElementById('adminUser').value.trim();
+    const p = document.getElementById('adminPass').value;
+    const r = await api('/api/admin/login', 'POST', { username: u, password: p });
+    if (!r.ok) { document.getElementById('err').textContent = r.msg; return; }
+    adminToken = r.token;
+    localStorage.setItem('admin_token', adminToken);
+    render();
+  };
+  document.getElementById('adminPass').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('loginBtn').click(); });
+}
+
+async function renderUserList(app) {
+  app.innerHTML = '<div class="admin-header"><h1>用户管理</h1><div class="right"><button class="btn btn-outline" style="width:auto;padding:6px 16px" id="logoutBtn">退出</button></div></div><div class="container"><div class="card" id="userCard"><p style="padding:40px;text-align:center;color:#94a3b8">加载中…</p></div></div>';
+  document.getElementById('logoutBtn').onclick = async () => {
+    await api('/api/admin/logout', 'POST');
+    adminToken = ''; localStorage.removeItem('admin_token'); render();
+  };
+  const r = await api('/api/admin/users');
+  if (!r.ok) { document.getElementById('userCard').innerHTML = '<p style="padding:20px;color:#ef4444">加载失败</p>'; return; }
+  const users = r.users || [];
+  const totalLearned = users.reduce((s, u) => s + u.learned_count, 0);
+  const activeToday = users.filter(u => u.last_checkin === today()).length;
+
+  document.getElementById('userCard').innerHTML = `
+    <div style="padding:16px 20px;display:flex;gap:12px;flex-wrap:wrap">
+      <span class="stat-chip">总用户 ${users.length}</span>
+      <span class="stat-chip">总学习词数 ${totalLearned}</span>
+      <span class="stat-chip">今日活跃 ${activeToday}</span>
+    </div>
+    <table>
+      <thead><tr>
+        <th>用户名</th><th>已学</th><th>错词</th><th>连续天数</th><th>最后打卡</th><th class="hide-mobile">注册时间</th><th class="hide-mobile">最后更新</th>
+      </tr></thead>
+      <tbody>
+        ${users.map(u => `<tr data-user="${u.username}">
+          <td><b>${esc(u.username)}</b></td>
+          <td>${u.learned_count}</td>
+          <td>${u.wrong_count > 0 ? `<span class="badge badge-orange">${u.wrong_count}</span>` : '<span class="badge badge-gray">0</span>'}</td>
+          <td>${u.streak > 0 ? `🔥 ${u.streak}` : '-'}</td>
+          <td>${u.last_checkin ? u.last_checkin : '<span style="color:#94a3b8">未打卡</span>'}</td>
+          <td class="hide-mobile" style="color:#94a3b8">${u.created_at}</td>
+          <td class="hide-mobile" style="color:#94a3b8">${u.updated_at}</td>
+        </tr>`).join('')}
+      </tbody>
+    </table>`;
+  if (users.length === 0) {
+    document.querySelector('#userCard tbody').innerHTML = '<tr><td colspan="7" style="padding:40px;text-align:center;color:#94a3b8">暂无用户</td></tr>';
+  }
+  document.querySelectorAll('#userCard tr[data-user]').forEach(tr => {
+    tr.onclick = () => { currentUserDetail = tr.dataset.user; render(); };
+  });
+}
+
+async function renderUserDetail(app) {
+  app.innerHTML = `<div class="admin-header"><h1>用户详情</h1></div><div class="container"><span class="back-link" id="backBtn">← 返回用户列表</span><div id="detailBody" style="margin-top:16px"><p style="padding:40px;text-align:center;color:#94a3b8">加载中…</p></div></div>`;
+  document.getElementById('backBtn').onclick = () => { currentUserDetail = null; render(); };
+  const r = await api('/api/admin/user/' + encodeURIComponent(currentUserDetail));
+  if (!r.ok) { document.getElementById('detailBody').innerHTML = '<p style="color:#ef4444">加载失败</p>'; return; }
+  const d = r.data || {};
+  const learned = d.learned || {};
+  const wrong = d.wrong || {};
+  const daily = d.daily || {};
+  const streak = d.streak || 0;
+
+  // 统计每日学习词数，用于日历
+  const dayCounts = {};
+  Object.values(learned).forEach(v => {
+    if (v && v.firstLearnDate) dayCounts[v.firstLearnDate] = (dayCounts[v.firstLearnDate] || 0) + 1;
+  });
+  Object.keys(daily).forEach(date => {
+    if (!dayCounts[date]) dayCounts[date] = daily[date].newWords || 1;
+  });
+
+  // 生成最近90天日历
+  const todayStr = today();
+  const days = [];
+  for (let i = 89; i >= 0; i--) {
+    const d2 = new Date();
+    d2.setDate(d2.getDate() - i);
+    const ds = d2.toISOString().slice(0, 10);
+    const count = dayCounts[ds] || 0;
+    let level = 0;
+    if (count >= 20) level = 4;
+    else if (count >= 10) level = 3;
+    else if (count >= 5) level = 2;
+    else if (count >= 1) level = 1;
+    days.push({ date: ds, count, level, isToday: ds === todayStr });
+  }
+
+  // 最近30天完整日期列表
+  const last30 = [];
+  for (let i = 29; i >= 0; i--) {
+    const d2 = new Date();
+    d2.setDate(d2.getDate() - i);
+    const ds = d2.toISOString().slice(0, 10);
+    last30.push({ date: ds, count: dayCounts[ds] || 0, isToday: ds === todayStr });
+  }
+
+  const learnedWords = Object.entries(learned).sort((a, b) => {
+    const da = (a[1] && a[1].firstLearnDate) || '';
+    const db = (b[1] && b[1].firstLearnDate) || '';
+    return db.localeCompare(da);
+  });
+
+  document.getElementById('detailBody').innerHTML = `
+    <div class="detail-header">
+      <h2 style="font-size:20px">${esc(r.username)}</h2>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <span class="stat-chip">注册 ${r.created_at.slice(0,10)}</span>
+        <span class="stat-chip">更新 ${r.updated_at.slice(0,10)}</span>
+      </div>
+    </div>
+
+    <div class="stat-grid">
+      <div class="stat-box"><div class="label">已学单词</div><div class="num" style="color:var(--primary)">${Object.keys(learned).length}</div></div>
+      <div class="stat-box"><div class="label">错词库</div><div class="num" style="color:var(--orange)">${Object.keys(wrong).length}</div></div>
+      <div class="stat-box"><div class="label">连续打卡</div><div class="num" style="color:var(--green)">🔥 ${streak}</div></div>
+      <div class="stat-box"><div class="label">最后打卡</div><div class="num" style="font-size:16px">${d.lastCheckIn || '未打卡'}</div></div>
+      <div class="stat-box"><div class="label">每日目标</div><div class="num" style="font-size:16px">${(d.settings||{}).dailyNewWords || 10} 词</div></div>
+      <div class="stat-box"><div class="label">教材版本</div><div class="num" style="font-size:14px">${(d.settings||{}).version === 'renmin' ? '人教精通' : (d.settings||{}).version === 'jijiao' ? '冀教版' : '全部'}</div></div>
+    </div>
+
+    <div class="calendar-wrap">
+      <h3>最近30天学习日历</h3>
+      <div class="calendar-legend">
+        <span>少</span>
+        <span class="cal-cell cal-0"></span><span class="cal-cell cal-1"></span><span class="cal-cell cal-2"></span><span class="cal-cell cal-3"></span><span class="cal-cell cal-4"></span>
+        <span>多</span>
+        <span style="margin-left:12px">最近90天共学习 ${days.reduce((s,d2)=>s+d2.count,0)} 词</span>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:3px;margin-bottom:16px">
+        ${last30.map(d2 => `<div style="text-align:center">
+          <div class="cal-day has-${d2.count>=20?4:d2.count>=10?3:d2.count>=5?2:d2.count>=1?1:0} ${d2.isToday?'today':''}" title="${d2.date}: ${d2.count}词"></div>
+          <div style="font-size:9px;color:#94a3b8;margin-top:2px">${d2.date.slice(5)}</div>
+        </div>`).join('')}
+      </div>
+      <h3 style="margin-top:8px">最近90天热力图</h3>
+      <div class="calendar-grid">
+        ${days.map(d2 => `<div class="cal-day has-${d2.level} ${d2.isToday?'today':''}" title="${d2.date}: ${d2.count}词"></div>`).join('')}
+      </div>
+    </div>
+
+    <div class="card">
+      <div style="padding:16px 20px"><h3 style="font-size:15px">错词库 (${Object.keys(wrong).length})</h3></div>
+      ${Object.keys(wrong).length > 0 ? `<div class="word-list"><table><thead><tr><th>单词</th></tr></thead><tbody>${Object.keys(wrong).map(w => `<tr><td>${esc(w)}</td></tr>`).join('')}</tbody></table></div>` : '<p style="padding:20px;color:#94a3b8">暂无错词</p>'}
+    </div>
+
+    <div class="card">
+      <div style="padding:16px 20px"><h3 style="font-size:15px">已学单词 (${learnedWords.length})</h3></div>
+      ${learnedWords.length > 0 ? `<div class="word-list"><table><thead><tr><th>单词</th><th>首次学习</th></tr></thead><tbody>${learnedWords.slice(0,200).map(([w,v]) => `<tr><td><b>${esc(w)}</b></td><td style="color:#94a3b8">${v && v.firstLearnDate ? v.firstLearnDate : '-'}</td></tr>`).join('')}</tbody></table>${learnedWords.length > 200 ? '<p style="padding:12px;text-align:center;color:#94a3b8">仅显示最近200条…</p>' : ''}</div>` : '<p style="padding:20px;color:#94a3b8">暂无学习记录</p>'}
+    </div>
+  `;
+}
+
+function today() { return new Date().toISOString().slice(0, 10); }
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+render();
+</script>
+</body>
+</html>

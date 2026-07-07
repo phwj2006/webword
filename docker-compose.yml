@@ -1,0 +1,18 @@
+version: "3.8"
+
+services:
+  webword:
+    build: .
+    container_name: webword
+    restart: always
+    ports:
+      - "8000:8000"
+    volumes:
+      # 数据持久化：数据库文件挂载到宿主机，重建容器不丢数据
+      - webword-data:/app/data
+    environment:
+      - PORT=8000
+      - DB_PATH=/app/data/webword.db
+
+volumes:
+  webword-data:

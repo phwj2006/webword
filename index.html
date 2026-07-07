@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#4f46e5">
+  <meta name="description" content="人教精通版+冀教版小学3-6年级、人教版初中+冀教版初中7-9年级英语单词练习，打字记忆、默写、复习">
+  <title>打字记单词 · 中小学英语练习</title>
+  <link rel="stylesheet" href="style.css?v=2">
+</head>
+<body>
+  <header class="navbar">
+    <div class="nav-inner">
+      <a class="brand" href="#/">
+        <span class="brand-mark">Aa</span>
+        <span class="brand-text">打字记单词</span>
+      </a>
+      <nav class="nav-menu" id="navMenu">
+        <a href="#/" data-route="home">首页</a>
+        <a href="#/learn" data-route="learn">学习</a>
+        <a href="#/practice" data-route="practice">练习</a>
+        <a href="#/dictation" data-route="dictation">默写</a>
+        <a href="#/review" data-route="review">复习</a>
+        <a href="#/wrong" data-route="wrong">错词库</a>
+        <a href="#/stats" data-route="stats">统计</a>
+      </nav>
+      <div class="nav-right">
+        <div class="streak-badge" id="streakBadge" title="连续打卡天数">
+          <span class="streak-icon">🔥</span>
+          <span id="streakDays">0</span><span class="streak-unit">天</span>
+        </div>
+        <div class="user-badge" id="userBadge"></div>
+      </div>
+    </div>
+  </header>
+
+  <main id="view" class="view-container"></main>
+
+  <footer class="footer">
+    <p>人教精通版 + 冀教版 小学3-6年级 · 人教版初中 + 冀教版初中 7-9年级 · 共 2332 个词条</p>
+  </footer>
+
+  <script src="js/words.js?v=3"></script>
+  <script src="js/app.js?v=15"></script>
+</body>
+</html>

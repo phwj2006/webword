@@ -1,0 +1,28 @@
+# Dependencies
+node_modules/
+package-lock.json
+
+# Build artifacts
+android/
+app-release/
+apk-build/
+www/
+www-local/
+*.apk
+
+# Python
+__pycache__/
+*.pyc
+*.db
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temp
+*.tmp
+*.bak

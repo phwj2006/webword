@@ -1,0 +1,10 @@
+webword.db
+webword.db-journal
+server.log
+*.pyc
+__pycache__
+.git
+README.md
+Dockerfile
+docker-compose.yml
+.dockerignore

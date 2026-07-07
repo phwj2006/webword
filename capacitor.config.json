@@ -1,0 +1,11 @@
+{
+  "appId": "com.webword.app",
+  "appName": "打字记单词",
+  "webDir": "www",
+  "android": {
+    "allowMixedContent": true
+  },
+  "server": {
+    "androidScheme": "http"
+  }
+}
