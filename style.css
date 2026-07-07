@@ -906,9 +906,19 @@ input { font-family: inherit; outline: none; }
 .chip:hover { border-color: var(--primary); }
 .chip.active { background: var(--primary); color: #fff; border-color: var(--primary); }
 
-.version-filter { gap: 12px; align-items: center; }
+.version-filter { gap: 10px; align-items: flex-start; flex-direction: column; }
 .version-group { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-.stage-label { font-size: 11px; color: var(--text-lighter); font-weight: 700; white-space: nowrap; padding: 2px 8px; background: var(--bg); border-radius: 8px; }
+.stage-tag {
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+  padding: 2px 10px;
+  border-radius: 10px;
+  white-space: nowrap;
+  line-height: 1.6;
+}
+.stage-tag.stage-primary { background: linear-gradient(135deg, #4f8cff, #2d6ae0); box-shadow: 0 1px 3px rgba(79,140,255,.3); }
+.stage-tag.stage-junior  { background: linear-gradient(135deg, #8b5cf6, #7c3aed); box-shadow: 0 1px 3px rgba(139,92,246,.3); }
 
 /* ========== 错词库 ========== */
 .wrong-toolbar {

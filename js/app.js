@@ -16,13 +16,17 @@
     ? 'http://192.168.99.59:8000'
     : '';
 
-  // 生成按学段分组的教材选择按钮
+  // 生成按学段分组的教材选择按钮（方案A：分组独立行）
   function versionChips(activeKey) {
-    return ['primary','junior'].map(stage => {
-      const items = (window.VERSION_LIST || []).filter(ver => (ver.stage||'primary') === stage);
+    const stages = [
+      { key: 'primary', label: '小学', cls: 'stage-primary' },
+      { key: 'junior',  label: '初中', cls: 'stage-junior'  }
+    ];
+    return stages.map(s => {
+      const items = (window.VERSION_LIST || []).filter(ver => (ver.stage||'primary') === s.key);
       if (!items.length) return '';
-      const label = stage === 'primary' ? '小学' : '初中';
-      return `<div class="version-group"><span class="stage-label">${label}</span>${items.map(ver => `<button class="chip ${ver.key === activeKey ? 'active' : ''}" data-version="${ver.key}">${ver.name}</button>`).join('')}</div>`;
+      const chips = items.map(ver => `<button class="chip ${ver.key === activeKey ? 'active' : ''}" data-version="${ver.key}">${ver.name}</button>`).join('');
+      return `<div class="version-group"><span class="stage-tag ${s.cls}">${s.label}</span>${chips}</div>`;
     }).join('');
   }
 
