@@ -155,9 +155,18 @@
     currentUser: null,
     _saveTimer: null,
 
+    // 带超时的 fetch 封装（5秒超时）
+    _fetch(url, options, timeout) {
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), timeout || 5000);
+      return fetch(url, { ...options, signal: ctrl.signal })
+        .then(res => { clearTimeout(timer); return res; })
+        .catch(e => { clearTimeout(timer); throw e; });
+    },
+
     async api(path, body) {
       try {
-        const res = await fetch(API_BASE + '/api/' + path, {
+        const res = await this._fetch(API_BASE + '/api/' + path, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(body)
@@ -171,7 +180,7 @@
     async apiGet(path) {
       const token = this.getToken();
       try {
-        const res = await fetch(API_BASE + '/api/' + path, {
+        const res = await this._fetch(API_BASE + '/api/' + path, {
           headers: token ? { 'Authorization': 'Bearer ' + token } : {}
         });
         return await res.json();
@@ -199,7 +208,11 @@
       if (!token) { this.data = null; return null; }
       const r = await this.apiGet('data');
       if (!r.ok) {
-        // token过期或无效
+        // 区分网络错误和token过期：网络错误返回 false 让上层重试
+        if (r.msg && r.msg.startsWith('网络错误')) {
+          return false; // 网络错误，可重试
+        }
+        // token过期或无效，清除token
         this.clearToken();
         return null;
       }
@@ -1519,7 +1532,30 @@ python server.py</code>
     }
     // 显示加载状态
     view.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;min-height:50vh;color:var(--text-lighter);font-size:15px;">加载中…</div>';
-    await Store.load(); // 已登录则从服务器拉取数据，未登录返回 null
+    // 加载数据，带重试机制
+    let loadRetries = 0;
+    while (loadRetries < 3) {
+      const r = await Store.load();
+      // r === null: 未登录或token过期，正常流程；r === 对象: 加载成功；r === false: 网络错误
+      if (r !== false) break;
+      // 网络错误，重试
+      loadRetries++;
+      if (loadRetries < 3) {
+        view.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:50vh;gap:12px;color:var(--text-lighter);font-size:15px;">
+          <span>网络不佳，正在重试 (${loadRetries}/3)…</span>
+        </div>`;
+        await new Promise(resolve => setTimeout(resolve, 1500));
+      }
+    }
+    if (loadRetries >= 3) {
+      // 重试3次仍失败，显示错误提示
+      view.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:50vh;gap:16px;color:var(--text-lighter);">
+        <div style="font-size:48px">📡</div>
+        <p style="font-size:15px;color:var(--text-light)">网络连接失败，请检查网络后重试</p>
+        <button class="btn btn-primary" onclick="location.reload()" style="margin-top:8px">重新加载</button>
+      </div>`;
+      return;
+    }
     updateStreak();
     updateUserBadge();
     window.addEventListener('hashchange', router);
