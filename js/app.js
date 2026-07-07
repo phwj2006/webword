@@ -345,6 +345,7 @@
     recordPractice(wordId, correct) {
       if (!this.data.learned[wordId]) this.recordLearn(wordId);
       const r = this.data.learned[wordId];
+      if (!r) return;
       r.reviewCount = (r.reviewCount || 0) + 1;
       r.lastReviewDate = util.today();
       const d = this.daily();
@@ -400,21 +401,22 @@
         .map(id => parseInt(id))
         .filter(id => {
           const r = this.data.learned[id];
+          if (!r) return false;
           return !r.mastered && r.nextReviewDate && r.nextReviewDate <= today;
         });
     },
 
     getNewWordsQueue(limit) {
-      const learned = new Set(Object.keys(this.data.learned).map(Number));
+      const learned = new Set(Object.keys(this.data.learned).filter(id => this.data.learned[id]).map(Number));
       const bank = util.wordBank();
       const unlearned = bank.filter(w => !learned.has(w.id));
       return unlearned.slice(0, limit || this.data.settings.dailyNewWords);
     },
 
-    learnedCount() { return Object.keys(this.data.learned).length; },
-    masteredCount() { return Object.values(this.data.learned).filter(r => r.mastered).length; },
-    wrongCount() { return Object.keys(this.data.wrong).length; },
-    totalScore() { return Object.values(this.data.daily).reduce((s, d) => s + (d.score || 0), 0); },
+    learnedCount() { return Object.values(this.data.learned).filter(r => r).length; },
+    masteredCount() { return Object.values(this.data.learned).filter(r => r && r.mastered).length; },
+    wrongCount() { return Object.keys(this.data.wrong || {}).length; },
+    totalScore() { return Object.values(this.data.daily || {}).filter(d => d).reduce((s, d) => s + (d.score || 0), 0); },
     todayProgress() { return this.daily(); }
   };
 
