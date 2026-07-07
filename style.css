@@ -731,7 +731,10 @@ input { font-family: inherit; outline: none; }
   padding: 0 3px 2px;
   margin: 0 1px;
   color: var(--text);
+  vertical-align: baseline;
+  line-height: 1.2;
 }
+.char.slot.space { width: 0.5em; min-width: 0.5em; }
 .char.slot.correct { color: var(--success); border-bottom-color: var(--success); background: transparent; }
 .char.slot.wrong { color: var(--danger); border-bottom-color: var(--danger); background: var(--danger-light); }
 .char.slot.blank { color: transparent; }
@@ -739,9 +742,9 @@ input { font-family: inherit; outline: none; }
 .char.slot.current::after {
   content: "";
   display: inline-block;
-  width: 2px; height: 1.1em;
+  width: 2px; height: 1em;
   background: var(--primary);
-  vertical-align: middle;
+  vertical-align: baseline;
   margin-left: -1px;
   animation: blink 1s steps(2) infinite;
 }
